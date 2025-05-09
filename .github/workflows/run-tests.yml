@@ -33,6 +33,8 @@ jobs:
         run: |
           mkdir -p docs
           cp -r target/site/allure-maven-plugin/* docs/
+          # Cria o arquivo .nojekyll para desabilitar o processamento Jekyll
+          touch docs/.nojekyll
 
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
