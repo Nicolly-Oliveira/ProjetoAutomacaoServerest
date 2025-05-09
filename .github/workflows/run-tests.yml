@@ -43,6 +43,6 @@ jobs:
         with:
           personal_token: ${{ secrets.GH_PAGES_TOKEN }}
           publish_dir: ./docs  # O diretório onde o relatório do Allure será copiado
-          target_branch: main  # Publica na branch 'main'
+          target_branch: gh-pages  # Publica na branch 'main'
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'
