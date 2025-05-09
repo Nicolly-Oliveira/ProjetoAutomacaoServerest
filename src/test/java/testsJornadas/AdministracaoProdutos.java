@@ -1,6 +1,7 @@
 package testsJornadas;
 
 import dto.UsuarioDTO;
+import io.qameta.allure.*;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.*;
@@ -9,7 +10,8 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.*;
 import static utils.Config.BASE_URL;
-
+@Epic("Jornada de Usuário Administrador")
+@Feature("Jornada de Gerenciamento de Produtos")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdministracaoProdutos {
 
@@ -60,6 +62,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(1)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarUsuarioAdminComSucesso() {
         UsuarioDTO usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, "deinteste", "false");
         usuarioAdminID = given()
@@ -78,6 +83,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(2)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void oUsuarioDeveSerlistado () {
         ValidatableResponse body = given()
                 .baseUri(BASE_URL)
@@ -93,37 +101,55 @@ public class AdministracaoProdutos {
                 .body(matchesJsonSchemaInClasspath("schemas/listarUsuarioSucessoSchema.json"));
     }
 
-    @Order(3)
     @Test
+    @Order(3)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveRealizarLoginUsuario() {
     }
 
     @Test
     @Order(4)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarProduto() {
 
     }
 
     @Test
     @Order(5)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void oProdutoDeveSerlistado() {
 
     }
 
     @Test
     @Order(6)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveSerEditadoOProduto() {
 
     }
 
     @Test
     @Order(7)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveBuscarOProdutoAposAlteracao() {
 
     }
 
     @Test
     @Order(8)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveApagarProduto() {
 
     }
