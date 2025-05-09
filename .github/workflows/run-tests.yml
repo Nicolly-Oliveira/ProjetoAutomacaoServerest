@@ -20,13 +20,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Build and test with Maven
+        run: mvn clean test
+
       - name: Set up Allure
         uses: simple-elf/allure-report-action@v1.7
         with:
           allure_version: 2.27.0
-
-      - name: Build and test with Maven
-        run: mvn clean test
 
       - name: Generate Allure Report
         run: mvn allure:report
