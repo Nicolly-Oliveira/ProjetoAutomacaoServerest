@@ -21,7 +21,9 @@ jobs:
           distribution: 'temurin'
 
       - name: Set up Allure
-        uses: allure-framework/actions/setup-allure@v1
+        uses: simple-elf/allure-report-action@v1.7
+        with:
+          allure_version: 2.27.0
 
       - name: Build and test with Maven
         run: mvn clean test
