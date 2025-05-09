@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p docs
           cp -r target/site/allure-maven-plugin/* docs/
-          mv allure-maven.html index.html
+          mv docs/allure-maven.html docs/index.html
           # Cria o arquivo .nojekyll para desabilitar o Jekyll
           touch docs/.nojekyll
 
