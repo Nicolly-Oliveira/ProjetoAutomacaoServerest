@@ -34,10 +34,11 @@ jobs:
           mkdir -p docs
           cp -r target/site/allure-maven-plugin/* docs/
 
-      - name: Commit and Push Allure Report to GitHub Pages
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add docs
-          git commit -m "Update Allure Report"
-          git push
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GH_PAGES_TOKEN }}  # Seu token pessoal do GitHub Pages
+          publish_dir: ./docs  # O diretório onde o relatório do Allure será copiado
+          target_branch: main  # Publica na branch 'main'
+          user_name: 'GitHub Actions'  # Nome de usuário para o commit
+          user_email: 'actions@github.com'  # E-mail para o commit
