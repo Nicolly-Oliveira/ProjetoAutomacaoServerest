@@ -1,5 +1,6 @@
 package testsJornadas;
 
+import dto.ProdutoDTO;
 import dto.UsuarioDTO;
 import io.qameta.allure.*;
 import io.restassured.http.ContentType;
@@ -15,11 +16,10 @@ import static utils.Config.BASE_URL;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdministracaoProdutos {
 
-    private static UsuarioDTO usuario;
-
+    private static UsuarioDTO usuarioAdmin;
     static String usuarioAdminID;
-
     static String tokenAdmin;
+    static String produtoID;
     static String emailAdmin = "deinadmin@teste.com";
 
     @BeforeAll
@@ -66,7 +66,7 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarUsuarioAdminComSucesso() {
-        UsuarioDTO usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, "deinteste", "false");
+        usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, "deinteste", "true");
         usuarioAdminID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -91,11 +91,11 @@ public class AdministracaoProdutos {
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .queryParam("email", emailAdmin)
-             .when()
+        .when()
                 .get("/usuarios")
-             .then()
+        .then()
                 .statusCode(200)
-                .body("quantidade", equalTo("1"))
+                .body("quantidade", equalTo(1))
                 .body("usuarios", not(empty()))
                 .body("usuarios.email", hasItem(emailAdmin))
                 .body(matchesJsonSchemaInClasspath("schemas/listarUsuarioSucessoSchema.json"));
@@ -107,6 +107,17 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveRealizarLoginUsuario() {
+        tokenAdmin = given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .body(usuarioAdmin)
+        .when()
+                .post("/login")
+        .then()
+                .statusCode(200)
+                .body("message", equalTo("Login realizado com sucesso"))
+                .body("authorization", notNullValue())
+                .extract().path("authorization");
     }
 
     @Test
@@ -115,42 +126,53 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarProduto() {
-
+        ProdutoDTO produtoDTO1 = new ProdutoDTO("Controle", 333.20, "Controle Xbox Series X", 117);
+        produtoID = given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .body(produtoDTO1)
+                .header("authorization", tokenAdmin)
+        .when()
+                .post("/produtos")
+        .then()
+                .statusCode(201)
+                .body("message", equalTo("Cadastro realizado com sucesso"))
+                .extract().path("_id");
     }
-
-    @Test
-    @Order(5)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
-    public void oProdutoDeveSerlistado() {
-
-    }
-
-    @Test
-    @Order(6)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
-    public void deveSerEditadoOProduto() {
-
-    }
-
-    @Test
-    @Order(7)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
-    public void deveBuscarOProdutoAposAlteracao() {
-
-    }
-
-    @Test
-    @Order(8)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
-    public void deveApagarProduto() {
-
-    }
+//
+//    @Test
+//    @Order(5)
+//    @Story("Novo usuário deve conseguir realizar login com sucesso")
+//    @Severity(SeverityLevel.CRITICAL)
+//    @Description("Verifica se um novo usuário realiza login com sucesso")
+//    public void oProdutoDeveSerlistado() {
+//
+//    }
+//
+//    @Test
+//    @Order(6)
+//    @Story("Novo usuário deve conseguir realizar login com sucesso")
+//    @Severity(SeverityLevel.CRITICAL)
+//    @Description("Verifica se um novo usuário realiza login com sucesso")
+//    public void deveSerEditadoOProduto() {
+//
+//    }
+//
+//    @Test
+//    @Order(7)
+//    @Story("Novo usuário deve conseguir realizar login com sucesso")
+//    @Severity(SeverityLevel.CRITICAL)
+//    @Description("Verifica se um novo usuário realiza login com sucesso")
+//    public void deveBuscarOProdutoAposAlteracao() {
+//
+//    }
+//
+//    @Test
+//    @Order(8)
+//    @Story("Novo usuário deve conseguir realizar login com sucesso")
+//    @Severity(SeverityLevel.CRITICAL)
+//    @Description("Verifica se um novo usuário realiza login com sucesso")
+//    public void deveApagarProduto() {
+//
+//    }
 }
