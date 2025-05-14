@@ -2,7 +2,7 @@ package dto;
 
 public class ProdutoDTO {
     private String nome;
-    private double preco;
+    private int preco;
     private String descricao;
     private int quantidade;
 
@@ -14,11 +14,11 @@ public class ProdutoDTO {
         this.nome = nome;
     }
 
-    public double getPreco() {
+    public int getPreco() {
         return preco;
     }
 
-    public void setPreco(double preco) {
+    public void setPreco(int preco) {
         this.preco = preco;
     }
 
@@ -38,7 +38,7 @@ public class ProdutoDTO {
         this.quantidade = quantidade;
     }
 
-    public ProdutoDTO(String nome, double preco, String descricao, int quantidade) {
+    public ProdutoDTO(String nome, int preco, String descricao, int quantidade) {
         this.nome = nome;
         this.preco = preco;
         this.descricao = descricao;

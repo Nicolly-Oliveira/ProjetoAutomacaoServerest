@@ -1,11 +1,14 @@
 package testsJornadas;
 
+import dto.LoginDTO;
 import dto.ProdutoDTO;
 import dto.UsuarioDTO;
 import io.qameta.allure.*;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.*;
+
+import java.util.Random;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
@@ -16,15 +19,21 @@ import static utils.Config.BASE_URL;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdministracaoProdutos {
 
+    static Random random = new Random();
+
     private static UsuarioDTO usuarioAdmin;
     static String usuarioAdminID;
     static String tokenAdmin;
-    static String produtoID;
     static String emailAdmin = "deinadmin@teste.com";
+    static String password = "deinteste";
+
+    private static ProdutoDTO produtoDTO;
+    static String produtoNome = "Controle Xbox Series X " + random.nextInt(1000);
+    static String produtoID;
 
     @BeforeAll
     public static void deveVerificarSeUsuarioAdminJaExiste() {
-        ValidatableResponse response = given()
+        ValidatableResponse responseUsuario = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .queryParam("email", emailAdmin)
@@ -34,10 +43,10 @@ public class AdministracaoProdutos {
                 .statusCode(200)
                 .body(matchesJsonSchemaInClasspath("schemas/listarUsuarioSucessoSchema.json"));
 
-        int quantidade = response.extract().path("quantidade");
+        int quantidade = responseUsuario.extract().path("quantidade");
 
         if (quantidade > 0) {
-            String id = response.extract().path("usuarios[0]._id");
+            String id = responseUsuario.extract().path("usuarios[0]._id");
 
             if (id != null && !id.isEmpty()) {
                 given()
@@ -48,10 +57,20 @@ public class AdministracaoProdutos {
                         .statusCode(200);
             }
         }
+
     }
 
     @AfterAll
     public static void deveLimparABase() {
+        given()
+                .baseUri(BASE_URL)
+                .header("authorization", tokenAdmin)
+                .when()
+                .log().all()
+                .delete("/produtos/" + produtoID)
+                .then()
+                .statusCode(200);
+
         given()
                 .baseUri(BASE_URL)
                 .when()
@@ -66,7 +85,7 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarUsuarioAdminComSucesso() {
-        usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, "deinteste", "true");
+        usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, password, "true");
         usuarioAdminID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -107,10 +126,11 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveRealizarLoginUsuario() {
+        LoginDTO loginDTO = new LoginDTO(usuarioAdmin.getEmail(), usuarioAdmin.getPassword());
         tokenAdmin = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
-                .body(usuarioAdmin)
+                .body(loginDTO)
         .when()
                 .post("/login")
         .then()
@@ -126,11 +146,11 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void deveCriarProduto() {
-        ProdutoDTO produtoDTO1 = new ProdutoDTO("Controle", 333.20, "Controle Xbox Series X", 117);
+        produtoDTO = new ProdutoDTO(produtoNome, 333, "Controle Xbox Series X", 117);
         produtoID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
-                .body(produtoDTO1)
+                .body(produtoDTO)
                 .header("authorization", tokenAdmin)
         .when()
                 .post("/produtos")
@@ -139,16 +159,16 @@ public class AdministracaoProdutos {
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .extract().path("_id");
     }
-//
-//    @Test
-//    @Order(5)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void oProdutoDeveSerlistado() {
-//
-//    }
-//
+
+    @Test
+    @Order(5)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
+    public void oProdutoDeveSerlistado() {
+
+    }
+
 //    @Test
 //    @Order(6)
 //    @Story("Novo usuário deve conseguir realizar login com sucesso")
