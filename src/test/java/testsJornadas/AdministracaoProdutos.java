@@ -166,18 +166,38 @@ public class AdministracaoProdutos {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verifica se um novo usuário realiza login com sucesso")
     public void oProdutoDeveSerlistado() {
-
+        ValidatableResponse body = given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .queryParam("nome", produtoDTO.getNome())
+                .when()
+                .get("/produtos")
+                .then()
+                .statusCode(200)
+                .body("quantidade", equalTo(1))
+                .body("produtos[0].nome", equalTo(produtoDTO.getNome()))
+                .body("produtos[0].preco", equalTo(produtoDTO.getPreco()))
+                .body("produtos[0].descricao", equalTo(produtoDTO.getDescricao()))
+                .body("produtos[0].quantidade", equalTo(produtoDTO.getQuantidade()))
+                .body("produtos[0]._id", equalTo(produtoID));
     }
 
-//    @Test
-//    @Order(6)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void deveSerEditadoOProduto() {
-//
-//    }
-//
+    @Test
+    @Order(6)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
+    public void deveSerEditadoOProduto() {
+        ValidatableResponse body = given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .header("authorization", tokenAdmin)
+                .when()
+                .put("/produtos/" + produtoID)
+                .then()
+                .statusCode(200);
+    }
+
 //    @Test
 //    @Order(7)
 //    @Story("Novo usuário deve conseguir realizar login com sucesso")
