@@ -8,13 +8,13 @@ import io.restassured.response.ValidatableResponse;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static utils.Config.BASE_URL;
 
 public class UsuarioCompradorBase {
 
-    static String usuarioID;
+    static String usuarioAdminID;
+    static String usuarioComumID;
     static String produtoID;
     static String carrinhoID;
     static String tokenComum;
@@ -35,9 +35,7 @@ public class UsuarioCompradorBase {
 
     public static void devePrepararOAmbiente() {
 
-        // Primeiro, verificamos se o usuário comum já existe
-        System.out.println("------------------------------------------------");
-        System.out.println("VERIFICANDO SE O USUÁRIO COMUM EXISTE");
+        System.out.println("VERIFICA SE O USUARIO COMUM EXISTE E SE EXISITR, REALIZA LOGIN");
         ValidatableResponse responseUsuario = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -54,8 +52,6 @@ public class UsuarioCompradorBase {
         if (quantidadeUsuarios > 0) {
             String idUsuario = responseUsuario.extract().path("usuarios[0]._id");
 
-            // Após verificar que o usuário comum existe, realizamos o login
-            System.out.println("USUÁRIO COMUM ENCONTRADO - REALIZANDO LOGIN");
             LoginDTO loginComum = new LoginDTO(emailComum, passwordComum);
             String tokenTemp = given()
                     .baseUri(BASE_URL)
@@ -70,12 +66,8 @@ public class UsuarioCompradorBase {
                     .body("message", equalTo("Login realizado com sucesso"))
                     .body("authorization", notNullValue())
                     .extract().path("authorization");
-            System.out.println("LOGIN USUÁRIO COMUM REALIZADO COM SUCESSO");
 
-            // Verificamos se existe um carrinho em progresso para o usuário comum
-            System.out.println("------------------------------------------------");
-            System.out.println("VERIFICANDO SE EXISTE CARRINHO EM PROGRESSO PARA O USUÁRIO COMUM");
-            // Verifica se existe carrinho para o usuário
+            System.out.println("VERIFICA SE ELE POSSUI CARRINHOS, SE POSSUIR IRÁ EXCLUIR O CARRINHO");
             ValidatableResponse responseCarrinho = given()
                     .baseUri(BASE_URL)
                     .header("Authorization", tokenTemp)
@@ -86,10 +78,8 @@ public class UsuarioCompradorBase {
                     .log().all()
                     .statusCode(200);
 
-            // Se encontrar um carrinho em progresso iremos cancelar a compra, senão iremos prosseguir com os testes
             int quantidadeCarrinho = responseCarrinho.extract().path("quantidade");
             if (quantidadeCarrinho > 0) {
-                System.out.println("CARRINHO ENCONTRADO - REALIZANDO CANCELAMENTO");
                 String idCarrinho = responseCarrinho.extract().path("carrinhos[0]._id");
                 if (idCarrinho != null && !idCarrinho.isEmpty()) {
                     given()
@@ -106,11 +96,7 @@ public class UsuarioCompradorBase {
                 System.out.println("NENHUM CARRINHO ENCONTRADO");
             }
 
-            // Agora que validamos que o carrinho não existe, iremos excluir o usuário comum, pois seguindo a regra de negócio
-            // Não podemos excluir um usuário com carrinho em progresso
-            System.out.println("------------------------------------------------");
-            System.out.println("EXCLUINDO USUÁRIO COMUM");
-            // Agora que o carrinho foi verificado/limpo, podemos excluir o usuário
+            System.out.println("EXCLUINDO O USUARIO COMUM APÓS DELETAR O CARRINHO");
             if (idUsuario != null && !idUsuario.isEmpty()) {
                 given()
                         .baseUri(BASE_URL)
@@ -122,12 +108,8 @@ public class UsuarioCompradorBase {
                         .statusCode(200);
             }
         }
-        System.out.println("USUÁRIO COMUM EXCLUÍDO COM SUCESSO");
 
-        // Verificamos se já existe um usuário admin cadastrado e se existir, iremos excluir esse usuário
-        System.out.println("------------------------------------------------");
-        System.out.println("VERIFICA SE JÁ EXISTE UM USUÁRIO ADMIN CADASTRADO");
-        // Envia uma requisicao GET para buscar usuarios pelo e-mail especificado
+        System.out.println("VERIFICA SE O USUARIO ADMIN EXISTE, E SE EXISITR SERÁ EXCLUÍDO");
         ValidatableResponse responseAdmin = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -135,20 +117,14 @@ public class UsuarioCompradorBase {
                 .when().log().all()
                 .get("/usuarios")
                 .then().log().all()
-                // Valida que a listagem foi realizada com sucesso
                 .statusCode(200)
-                // Valida que a estrutura do JSON da resposta corresponde ao schema esperado
                 .body(matchesJsonSchemaInClasspath("schemas/listarUsuarioSucessoSchema.json"));
 
-        // Extrai o numero de usuarios retornados na resposta
         int quantidadeAdmin = responseAdmin.extract().path("quantidade");
 
-        // Entao, se ja existir um ou mais usuarios com o e-mail fornecido
         if (quantidadeAdmin > 0) {
-            // Ira extrair o ID do primeiro usuario retornado
             String id = responseAdmin.extract().path("usuarios[0]._id");
 
-            // Se o ID for valido, realiza a exclusão desse usuario
             if (id != null && !id.isEmpty()) {
                 given()
                         .baseUri(BASE_URL)
@@ -159,12 +135,9 @@ public class UsuarioCompradorBase {
             }
         }
 
-        System.out.println("------------------------------------------------");
-        System.out.println("TESTE PARA CADASTRAR USUARIO ADMIN COM SUCESSO");
-        // Cria um objeto DTO com os dados do novo usuario a ser cadastrado
+        System.out.println("REALIZA O CADASTRO DO USUÁRIO ADMIN");
         UsuarioDTO usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, passwordAdmin, "true");
-        // Envia uma requisicao POST para a API /usuarios com os dados do usuario
-        usuarioID = given()
+        usuarioAdminID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .body(usuarioAdmin)
@@ -172,22 +145,14 @@ public class UsuarioCompradorBase {
                 .post("/usuarios")
                 .then()
                 .log().all()
-                // Valida que o cadastro foi realizado com sucesso
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
-                // Valida que o campo _id foi retornado e nao e nulo
                 .body("_id", notNullValue())
-                // Valida que o corpo da resposta segue o schema esperado
                 .body(matchesJsonSchemaInClasspath("schemas/cadastroUsuarioSucessoSchema.json"))
-                // Extrai o _id do novo usuario cadastrado e armazena para uso em testes futuros
                 .extract().path("_id");
-        System.out.println("CADASTRO DO USUARIO ADMIN REALIZADO COM SUCESSO");
 
-        System.out.println("------------------------------------------------");
-        System.out.println("TESTE PARA REALIZAR LOGIN DO USUARIO ADMIN COM SUCESSO");
-        // Cria um objeto DTO com os dados necessarios para login
+        System.out.println("REALIZA O LOGIN DO USUÁRIO ADMIN");
         LoginDTO loginAdmin = new LoginDTO(emailAdmin, passwordAdmin);
-        // Envia uma requisicao POST para a API /usuarios com os dados do login
         tokenAdmin = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -196,17 +161,12 @@ public class UsuarioCompradorBase {
                 .post("/login")
                 .then()
                 .log().all()
-                // Valida que o login foi realizado com sucesso
                 .statusCode(200)
                 .body("message", equalTo("Login realizado com sucesso"))
                 .body("authorization", notNullValue())
-                // Extrai o authorization do login e armazena para uso em testes futuros
                 .extract().path("authorization");
-        System.out.println("LOGIN DO USUARIO ADMIN REALIZADO COM SUCESSO");
 
-        System.out.println("------------------------------------------------");
-        System.out.println("VERIFICA SE JÁ EXISTE UM PRODUTO COMUM CADASTRADO");
-        // Envia uma requisicao GET para buscar produtos pelo nome especificado
+        System.out.println("VERIFICA SE O PRODUTO EXISTE E SE EXISTIR REALIZA A EXCLUSÃO");
         ValidatableResponse responseProduto = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -215,18 +175,13 @@ public class UsuarioCompradorBase {
                 .when().log().all()
                 .get("/produtos")
                 .then().log().all()
-                // Valida que a listagem foi realizada com sucesso
                 .statusCode(200);
 
-        // Extrai o numero de produtos retornados na resposta
         int quantidadeProduto = responseProduto.extract().path("quantidade");
 
-        // Entao, se ja existir um ou mais produtos com o nome fornecido
         if (quantidadeProduto > 0) {
-            // Ira extrair o ID do primeiro produto retornado
             String id = responseProduto.extract().path("produtos[0]._id");
 
-            // Se o ID for valido, realiza a exclusão desse produto
             if (id != null && !id.isEmpty()) {
                 given()
                         .baseUri(BASE_URL)
@@ -238,11 +193,8 @@ public class UsuarioCompradorBase {
             }
         }
 
-        System.out.println("------------------------------------------------");
-        System.out.println("TESTE PARA CADASTRAR UM PRODUTO COMUM COM SUCESSO");
-        // Cria um objeto DTO com os dados do novo produto a ser cadastrado
+        System.out.println("CADASTRA NOVO PROUTO");
         ProdutoDTO produtoComum = new ProdutoDTO(nomeProduto, precoProduto, descricaoProduto, 100);
-        // Envia uma requisicao POST para a API /produtos com os dados necessarios para cadastrar um produto
         produtoID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
@@ -252,14 +204,10 @@ public class UsuarioCompradorBase {
                 .log().all()
                 .post("/produtos")
                 .then().log().all()
-                // Valida que o produto foi cadastrado com sucesso
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
-                // Valida que o campo _id foi retornado e nao e nulo
                 .body("_id", notNullValue())
-                // Extrai o _id do novo produto cadastrado e armazena para uso em testes futuros
                 .extract().path("_id");
-        System.out.println("CADASTRO DO PRODUTO REALIZADO COM SUCESSO");
     }
 
 }
