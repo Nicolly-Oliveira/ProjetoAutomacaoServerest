@@ -153,36 +153,69 @@ public class UsuarioComprador extends UsuarioCompradorBase {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verificar se a compra foi concluída com sucesso")
     public void deveConcluirCompraComSucesso() {
-        given()
+        //Listamos os carrinhos associados ao token do usuário comum
+        ValidatableResponse responseCarrinho = given()
                 .baseUri(BASE_URL)
                 .header("Authorization", tokenComum)
                 .log().all()
             .when()
-                .delete("/carrinhos/concluir-compra")
+                .get("/carrinhos")
             .then()
                 .log().all()
-                .statusCode(HttpStatus.SC_OK)
-                .body("message", equalTo("Registro excluído com sucesso"));
-    }
+                .statusCode(HttpStatus.SC_OK);
 
-//    @Test
-//    @Order(7)
-//    @Story("Carrinho não deve existir")
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se o carrinho não existe")
-//    public void deveVerificarSeCarrinhoNãoExiste() {
+        // Extraímos a quantidade
+        int quantidadeCarrinho = responseCarrinho.extract().path("quantidade");
+
+        // Se a quantidade de carrinho for maior que 0, concluímos a compra e realizamos o delete do carrinho
+        if (quantidadeCarrinho > 0) {
+            System.out.println("Concluindo compra");
+            String idCarrinho = responseCarrinho.extract().path("carrinhos[0]._id");
+            if (idCarrinho != null && !idCarrinho.isEmpty()) {
+                given()
+                        .baseUri(BASE_URL)
+                        .header("Authorization", tokenComum)
+                        .log().all()
+                    .when()
+                        .delete("/carrinhos/concluir-compra")
+                    .then()
+                        .log().all()
+                        .statusCode(HttpStatus.SC_OK)
+                        .body("message", equalTo("Registro excluído com sucesso"));
+            }
+        }
+
+
 //        given()
 //                .baseUri(BASE_URL)
 //                .header("Authorization", tokenComum)
 //                .log().all()
 //            .when()
-//                .get("/carrinhos")
+//                .delete("/carrinhos/concluir-compra")
 //            .then()
 //                .log().all()
 //                .statusCode(HttpStatus.SC_OK)
-//                .body("quantidade", equalTo(0))
-//                .body("carrinhos", empty());
-//    }
+//                .body("message", equalTo("Registro excluído com sucesso"));
+    }
+
+    @Test
+    @Order(7)
+    @Story("Carrinho não deve existir")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verificar que o carrinho não existe")
+    public void deveVerificarQueOCarrinhoNãoExiste() {
+        given()
+                .baseUri(BASE_URL)
+                .header("Authorization", tokenComum)
+                .log().all()
+            .when()
+                .get("/carrinhos")
+            .then()
+                .log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .body("quantidade", equalTo(0));
+                //.body("carrinhos", empty());
+    }
 
 //    @Test
       // Definimos uma ordem, pois precisamos seguir uma sequencia logica desde que é uma jornada de compra
