@@ -20,6 +20,7 @@ import static utils.Config.BASE_URL;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 public class UsuarioComprador extends UsuarioCompradorBase {
+
     @BeforeAll
     @Description("Prepara o ambiente com os dados necessários para realizar o fluxo de jornada de sucesso")
     public static void devePrepararOAmbiente() {
@@ -51,6 +52,7 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .post("/usuarios")
             .then()
                 .statusCode(HttpStatus.SC_CREATED)
+                .time(lessThan(2000L))
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
                 .body(matchesJsonSchemaInClasspath("schemas/cadastroUsuarioSucessoSchema.json"))
@@ -72,11 +74,11 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .post("/login")
             .then()
                 .statusCode(HttpStatus.SC_OK)
+                .time(lessThan(2000L))
                 .body("message", equalTo("Login realizado com sucesso"))
                 .body("authorization", notNullValue())
                 .extract().path("authorization");
     }
-
 
 //    @Test
       // Definimos uma ordem, pois precisamos seguir uma sequencia logica desde que é uma jornada de compra
@@ -115,6 +117,7 @@ public class UsuarioComprador extends UsuarioCompradorBase {
             .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
+                .time(lessThan(2000L))
                 .body("nome", equalTo(nomeProduto))
                 .body("descricao", equalTo(descricaoProduto))
                 .body("preco", equalTo(precoProduto)) // Atenção: use float aqui para comparação
@@ -138,32 +141,68 @@ public class UsuarioComprador extends UsuarioCompradorBase {
             .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_CREATED)
+                .time(lessThan(2000L))
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
                 .extract().path("_id");
     }
 
+    @Test
+    @Order(6)
+    @Story("Concluir compra com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verificar se a compra foi concluída com sucesso")
+    public void deveConcluirCompraComSucesso() {
+        //Listamos os carrinhos associados ao token do usuário comum
+        ValidatableResponse responseCarrinho = given()
+                .baseUri(BASE_URL)
+                .header("Authorization", tokenComum)
+                .log().all()
+            .when()
+                .get("/carrinhos")
+            .then()
+                .log().all()
+                .statusCode(HttpStatus.SC_OK);
+
+        // Extraímos a quantidade
+        int quantidadeCarrinho = responseCarrinho.extract().path("quantidade");
+
+        // Se a quantidade de carrinho for maior que 0, concluímos a compra e realizamos o delete do carrinho
+        if (quantidadeCarrinho > 0) {
+            System.out.println("Concluindo compra");
+            String idCarrinho = responseCarrinho.extract().path("carrinhos[0]._id");
+            if (idCarrinho != null && !idCarrinho.isEmpty()) {
+                given()
+                        .baseUri(BASE_URL)
+                        .header("Authorization", tokenComum)
+                        .log().all()
+                    .when()
+                        .delete("/carrinhos/concluir-compra")
+                    .then()
+                        .log().all()
+                        .statusCode(HttpStatus.SC_OK)
+                        .body("message", equalTo("Registro excluído com sucesso"));
+            }
+        }
+    }
 
 //    @Test
-      // Definimos uma ordem, pois precisamos seguir uma sequencia logica desde que é uma jornada de compra
-//    @Order(6)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    // Definimos a severidade do teste como critica, indicando que falhas aqui sao graves
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void deveConcluirCompra() {
-//
-//    }
-
-//    @Test
-      // Definimos uma ordem, pois precisamos seguir uma sequencia logica desde que é uma jornada de compra
 //    @Order(7)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-    // Definimos a severidade do teste como critica, indicando que falhas aqui sao graves
+//    @Story("Carrinho não deve existir")
 //    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
+//    @Description("Verifica se o carrinho não existe")
 //    public void deveVerificarSeCarrinhoNãoExiste() {
-//
+//        given()
+//                .baseUri(BASE_URL)
+//                .header("Authorization", tokenComum)
+//                .log().all()
+//            .when()
+//                .get("/carrinhos")
+//            .then()
+//                .log().all()
+//                .statusCode(HttpStatus.SC_OK)
+//                .body("quantidade", equalTo(0))
+//                .body("carrinhos", empty());
 //    }
 
 //    @Test
@@ -176,4 +215,5 @@ public class UsuarioComprador extends UsuarioCompradorBase {
 //    public void deveRetirarProdutoDoEstoque() {
 //
 //    }
+
 }
