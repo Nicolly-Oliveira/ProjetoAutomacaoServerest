@@ -21,15 +21,17 @@ public class AdministracaoProdutos {
 
     static Random random = new Random();
 
-    private static UsuarioDTO usuarioAdmin;
+    static UsuarioDTO usuarioAdmin;
     static String usuarioAdminID;
     static String tokenAdmin;
     static String emailAdmin = "deinadmin@teste.com";
     static String password = "deinteste";
 
-    private static ProdutoDTO produtoDTO;
+    static ProdutoDTO produtoDTO;
     static String produtoNome = "Controle Xbox Series X " + random.nextInt(1000);
     static String produtoID;
+
+    static ProdutoDTO produtoAtualizado = new ProdutoDTO("Controle DualSense PS5",300, "Controle DualSense", 100);
 
     @BeforeAll
     public static void deveVerificarSeUsuarioAdminJaExiste() {
@@ -170,9 +172,9 @@ public class AdministracaoProdutos {
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .queryParam("nome", produtoDTO.getNome())
-                .when()
+            .when()
                 .get("/produtos")
-                .then()
+            .then()
                 .statusCode(200)
                 .body("quantidade", equalTo(1))
                 .body("produtos[0].nome", equalTo(produtoDTO.getNome()))
@@ -192,27 +194,61 @@ public class AdministracaoProdutos {
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .header("authorization", tokenAdmin)
-                .when()
+                .body(produtoAtualizado)
+            .when()
                 .put("/produtos/" + produtoID)
-                .then()
-                .statusCode(200);
+            .then()
+                .statusCode(200)
+                .body("message", equalTo("Registro alterado com sucesso"));
     }
 
-//    @Test
-//    @Order(7)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void deveBuscarOProdutoAposAlteracao() {
-//
-//    }
-//
-//    @Test
-//    @Order(8)
-//    @Story("Novo usuário deve conseguir realizar login com sucesso")
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void deveApagarProduto() {
-//
-//    }
+    @Test
+    @Order(7)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
+    public void deveBuscarOProdutoAposAlteracao() {
+        ValidatableResponse body = given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .queryParam("nome", produtoAtualizado.getNome())
+            .when()
+                .get("/produtos")
+            .then()
+                .statusCode(200)
+                .body("quantidade", equalTo(1))
+                .body("produtos[0].nome", equalTo(produtoAtualizado.getNome()))
+                .body("produtos[0].preco", equalTo(produtoAtualizado.getPreco()))
+                .body("produtos[0].descricao", equalTo(produtoAtualizado.getDescricao()))
+                .body("produtos[0].quantidade", equalTo(produtoAtualizado.getQuantidade()))
+                .body("produtos[0]._id", equalTo(produtoID));
+    }
+
+    @Test
+    @Order(8)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se um novo usuário realiza login com sucesso")
+    public void deveApagarProdutoENaoListar() {
+        given()
+                .baseUri(BASE_URL)
+                .header("authorization", tokenAdmin)
+            .when()
+                .log().all()
+                .delete("/produtos/" + produtoID)
+            .then()
+                .statusCode(200)
+                .body("message", equalTo("Registro excluído com sucesso"));
+
+        given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .queryParam("nome", produtoDTO.getNome())
+            .when()
+                .get("/produtos")
+            .then()
+                .statusCode(200)
+                .body("quantidade", equalTo(0))
+                .body("produtos[]", empty());
+    }
 }
