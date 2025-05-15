@@ -153,37 +153,16 @@ public class UsuarioComprador extends UsuarioCompradorBase {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Verificar se a compra foi concluída com sucesso")
     public void deveConcluirCompraComSucesso() {
-        //Listamos os carrinhos associados ao token do usuário comum
-        ValidatableResponse responseCarrinho = given()
+        given()
                 .baseUri(BASE_URL)
                 .header("Authorization", tokenComum)
                 .log().all()
             .when()
-                .get("/carrinhos")
+                .delete("/carrinhos/concluir-compra")
             .then()
                 .log().all()
-                .statusCode(HttpStatus.SC_OK);
-
-        // Extraímos a quantidade
-        int quantidadeCarrinho = responseCarrinho.extract().path("quantidade");
-
-        // Se a quantidade de carrinho for maior que 0, concluímos a compra e realizamos o delete do carrinho
-        if (quantidadeCarrinho > 0) {
-            System.out.println("Concluindo compra");
-            String idCarrinho = responseCarrinho.extract().path("carrinhos[0]._id");
-            if (idCarrinho != null && !idCarrinho.isEmpty()) {
-                given()
-                        .baseUri(BASE_URL)
-                        .header("Authorization", tokenComum)
-                        .log().all()
-                    .when()
-                        .delete("/carrinhos/concluir-compra")
-                    .then()
-                        .log().all()
-                        .statusCode(HttpStatus.SC_OK)
-                        .body("message", equalTo("Registro excluído com sucesso"));
-            }
-        }
+                .statusCode(HttpStatus.SC_OK)
+                .body("message", equalTo("Registro excluído com sucesso"));
     }
 
 //    @Test
