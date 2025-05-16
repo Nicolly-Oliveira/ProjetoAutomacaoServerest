@@ -21,36 +21,25 @@ jobs:
           distribution: 'temurin'
 
       - name: Build and test with Maven
-        run: mvn clean test -Dtest=suite.SuiteRunner
+        run: mvn clean test -Dtest=suite.SuiteRunner -Dallure.results.directory=target/allure-results
 
-      - name: Set up Allure CLI
-        uses: simple-elf/allure-report-action@v1.7
-        with:
-          allure_version: 2.27.0
-
-      - name: Show Allure Results location
+      - name: List directories to debug allure-results location
         run: |
-          echo "Checking .allure-results directory:"
+          echo "Root files:"
+          ls -la
+          echo "Target files:"
+          ls -la target
+          echo ".allure-results files:"
+          ls -la .allure-results || echo ".allure-results not found"
+
+      - name: Copy allure results to target directory if exists
+        run: |
           if [ -d ".allure-results" ]; then
-            echo ".allure-results exists. Files:"
-            ls -la .allure-results
-          else
-            echo ".allure-results directory does NOT exist."
-          fi
-
-          echo ""
-          echo "Checking target/allure-results directory:"
-          if [ -d "target/allure-results" ]; then
-            echo "target/allure-results exists. Files:"
-            ls -la target/allure-results
-          else
-            echo "target/allure-results directory does NOT exist."
-          fi
-
-      - name: Copy Allure results to target folder
-        run: |
             mkdir -p target/allure-results
             cp -r .allure-results/* target/allure-results/
+          else
+            echo ".allure-results directory does NOT exist. Skipping copy."
+          fi
 
       - name: Generate Allure Report
         run: mvn allure:report
