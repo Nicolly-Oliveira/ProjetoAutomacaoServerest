@@ -23,27 +23,26 @@ jobs:
       - name: Build and test with Maven
         run: mvn clean test
 
-      - name: Set up Allure
+      - name: Set up Allure CLI
         uses: simple-elf/allure-report-action@v1.7
         with:
           allure_version: 2.27.0
 
       - name: Generate Allure Report
-        run: mvn allure:report
+        run: mvn allure:report -Dallure.results.directory=.allure-results
 
       - name: Copy Allure Report to docs folder
         run: |
           mkdir -p docs
           cp -r target/site/allure-maven-plugin/* docs/
           mv docs/allure-maven.html docs/index.html
-          # Cria o arquivo .nojekyll para desabilitar o Jekyll
           touch docs/.nojekyll
 
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.GH_PAGES_TOKEN }}
-          publish_dir: ./docs  # O diretório onde o relatório do Allure será copiado
-          target_branch: gh-pages  # Publica na branch 'main'
+          publish_dir: ./docs
+          target_branch: gh-pages
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'

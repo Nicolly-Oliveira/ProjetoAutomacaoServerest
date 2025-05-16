@@ -14,7 +14,7 @@ import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInC
 import static org.hamcrest.Matchers.*;
 import static utils.Config.BASE_URL;
 
-@Epic("Jornada de sucesso")
+@Epic("Jornada de compra do usuário com sucesso")
 @Feature("Jornada de compra de sucesso")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
