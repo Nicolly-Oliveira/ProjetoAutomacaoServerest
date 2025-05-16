@@ -34,8 +34,7 @@ jobs:
       - name: Copy Allure Report to docs folder
         run: |
           mkdir -p docs
-          cp -r target/site/allure-maven-plugin/* docs/
-          mv docs/allure-maven.html docs/index.html
+          cp -r target/site/* docs/
           touch docs/.nojekyll
 
       - name: Deploy Allure Report to GitHub Pages
