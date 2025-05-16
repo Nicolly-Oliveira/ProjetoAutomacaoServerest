@@ -98,7 +98,7 @@ public class AdministracaoProdutos {
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
-                .body(matchesJsonSchemaInClasspath("schemas/cadastroUsuarioSucessoSchema.json"))
+                .body(matchesJsonSchemaInClasspath("schemas/cadastroSucessoSchema.json"))
                 .extract().path("_id");
     }
 
@@ -139,6 +139,7 @@ public class AdministracaoProdutos {
                 .statusCode(200)
                 .body("message", equalTo("Login realizado com sucesso"))
                 .body("authorization", notNullValue())
+                .body(matchesJsonSchemaInClasspath("schemas/loginUsuarioSucessoSchema.json"))
                 .extract().path("authorization");
     }
 
@@ -159,6 +160,7 @@ public class AdministracaoProdutos {
             .then()
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
+                .body(matchesJsonSchemaInClasspath("schemas/cadastroSucessoSchema.json"))
                 .extract().path("_id");
     }
 

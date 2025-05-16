@@ -1,7 +1,6 @@
 package testsJornadas;
 
 import dto.CarrinhoDTO;
-import dto.ProdutoDTO;
 import dto.LoginDTO;
 import dto.UsuarioDTO;
 import io.qameta.allure.*;
@@ -10,11 +9,8 @@ import io.restassured.response.ValidatableResponse;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
 
-import java.util.List;
-
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static utils.Config.BASE_URL;
 
@@ -29,16 +25,6 @@ public class UsuarioComprador extends UsuarioCompradorBase {
     public static void devePrepararOAmbiente() {
         UsuarioCompradorBase.devePrepararOAmbiente();
     }
-
-//    @AfterAll
-//    public static void deveLimparABase() {
-//        given()
-//                .baseUri(BASE_URL)
-//                .when()
-//                .delete("/usuarios/" + usuarioID)
-//                .then()
-//                .statusCode(200);
-//    }
 
     @Test
     @Order(1)
@@ -58,7 +44,7 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .time(lessThan(2000L))
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
-                .body(matchesJsonSchemaInClasspath("schemas/cadastroUsuarioSucessoSchema.json"))
+                .body(matchesJsonSchemaInClasspath("schemas/cadastroSucessoSchema.json"))
                 .extract().path("_id");
     }
 
@@ -80,6 +66,7 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .time(lessThan(2000L))
                 .body("message", equalTo("Login realizado com sucesso"))
                 .body("authorization", notNullValue())
+                .body(matchesJsonSchemaInClasspath("schemas/loginUsuarioSucessoSchema.json"))
                 .extract().path("authorization");
     }
 
@@ -124,7 +111,8 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .body("nome", equalTo(nomeProduto))
                 .body("descricao", equalTo(descricaoProduto))
                 .body("preco", equalTo(precoProduto))
-                .body("quantidade", equalTo(100));
+                .body("quantidade", equalTo(100))
+                .body(matchesJsonSchemaInClasspath("schemas/buscarProdutoPorIDSucessoSchema.json"));
     }
 
     @Test
@@ -147,6 +135,7 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .time(lessThan(2000L))
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
+                .body(matchesJsonSchemaInClasspath("schemas/cadastroSucessoSchema.json"))
                 .extract().path("_id");
     }
 
@@ -188,15 +177,22 @@ public class UsuarioComprador extends UsuarioCompradorBase {
                 .time(lessThan(2000L));
     }
 
-//    @Test
-        // Definimos uma ordem, pois precisamos seguir uma sequencia logica desde que é uma jornada de compra
-//    @Order(8)
-        //@Story("Novo usuário deve conseguir realizar login com sucesso")
-        // Definimos a severidade do teste como critica, indicando que falhas aqui sao graves
-//    @Severity(SeverityLevel.CRITICAL)
-//    @Description("Verifica se um novo usuário realiza login com sucesso")
-//    public void deveRetirarProdutoDoEstoque() {
-//
-//    }
-
+    @Test
+    @Order(8)
+    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verifica se o produto comprado saiu do estoque")
+    public void deveRetirarProdutoDoEstoque() {
+        given()
+                .baseUri(BASE_URL)
+                .contentType(ContentType.JSON)
+                .queryParam("nome", nomeProduto)
+            .when().log().all()
+                .get("/produtos")
+            .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .body("produtos[0].quantidade", equalTo(95))
+                .time(lessThan(2000L));
     }
+
+}

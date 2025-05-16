@@ -148,7 +148,7 @@ public class UsuarioCompradorBase {
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
-                .body(matchesJsonSchemaInClasspath("schemas/cadastroUsuarioSucessoSchema.json"))
+                .body(matchesJsonSchemaInClasspath("schemas/cadastroSucessoSchema.json"))
                 .extract().path("_id");
 
         System.out.println("REALIZA O LOGIN DO USUÁRIO ADMIN");
