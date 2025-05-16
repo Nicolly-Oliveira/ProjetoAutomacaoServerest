@@ -2,9 +2,16 @@ package dto;
 
 public class ProdutoDTO {
     private String nome;
-    private int preco;
+    private double preco;
     private String descricao;
     private int quantidade;
+
+    public ProdutoDTO(String nome, double preco, String descricao, int quantidade) {
+        this.nome = nome;
+        this.preco = preco;
+        this.descricao = descricao;
+        this.quantidade = quantidade;
+    }
 
     public String getNome() {
         return nome;
@@ -14,11 +21,11 @@ public class ProdutoDTO {
         this.nome = nome;
     }
 
-    public int getPreco() {
+    public double getPreco() {
         return preco;
     }
 
-    public void setPreco(int preco) {
+    public void setPreco(double preco) {
         this.preco = preco;
     }
 
@@ -35,13 +42,6 @@ public class ProdutoDTO {
     }
 
     public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public ProdutoDTO(String nome, int preco, String descricao, int quantidade) {
-        this.nome = nome;
-        this.preco = preco;
-        this.descricao = descricao;
         this.quantidade = quantidade;
     }
 }
