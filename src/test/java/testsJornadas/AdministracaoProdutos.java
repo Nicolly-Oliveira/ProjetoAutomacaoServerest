@@ -67,34 +67,34 @@ public class AdministracaoProdutos {
         given()
                 .baseUri(BASE_URL)
                 .header("authorization", tokenAdmin)
-                .when()
+            .when()
                 .log().all()
                 .delete("/produtos/" + produtoID)
-                .then()
+            .then()
                 .statusCode(200);
 
         given()
                 .baseUri(BASE_URL)
-                .when()
+            .when()
                 .delete("/usuarios/" + usuarioAdminID)
-                .then()
+            .then()
                 .statusCode(200);
     }
 
     @Test
     @Order(1)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um novo usuário admin é criado com sucesso")
     public void deveCriarUsuarioAdminComSucesso() {
         usuarioAdmin = new UsuarioDTO("Usuario Admin", emailAdmin, password, "true");
         usuarioAdminID = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .body(usuarioAdmin)
-        .when()
+            .when()
                 .post("/usuarios")
-        .then()
+            .then()
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .body("_id", notNullValue())
@@ -104,17 +104,17 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(2)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um novo usuário admin é listado com sucesso")
     public void oUsuarioDeveSerlistado () {
         ValidatableResponse body = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .queryParam("email", emailAdmin)
-        .when()
+            .when()
                 .get("/usuarios")
-        .then()
+            .then()
                 .statusCode(200)
                 .body("quantidade", equalTo(1))
                 .body("usuarios", not(empty()))
@@ -124,18 +124,18 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(3)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um novo usuário admin realiza login com sucesso")
     public void deveRealizarLoginUsuario() {
         LoginDTO loginDTO = new LoginDTO(usuarioAdmin.getEmail(), usuarioAdmin.getPassword());
         tokenAdmin = given()
                 .baseUri(BASE_URL)
                 .contentType(ContentType.JSON)
                 .body(loginDTO)
-        .when()
+            .when()
                 .post("/login")
-        .then()
+            .then()
                 .statusCode(200)
                 .body("message", equalTo("Login realizado com sucesso"))
                 .body("authorization", notNullValue())
@@ -144,9 +144,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(4)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um novo usuário admin cria produto com sucesso")
     public void deveCriarProduto() {
         produtoDTO = new ProdutoDTO(produtoNome, 333, "Controle Xbox Series X", 117);
         produtoID = given()
@@ -154,9 +154,9 @@ public class AdministracaoProdutos {
                 .contentType(ContentType.JSON)
                 .body(produtoDTO)
                 .header("authorization", tokenAdmin)
-        .when()
+            .when()
                 .post("/produtos")
-        .then()
+            .then()
                 .statusCode(201)
                 .body("message", equalTo("Cadastro realizado com sucesso"))
                 .extract().path("_id");
@@ -164,9 +164,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(5)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um novo produto é listado com sucesso")
     public void oProdutoDeveSerlistado() {
         ValidatableResponse body = given()
                 .baseUri(BASE_URL)
@@ -186,9 +186,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(6)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um produto é atualizado com sucesso")
     public void deveSerEditadoOProduto() {
         ValidatableResponse body = given()
                 .baseUri(BASE_URL)
@@ -204,9 +204,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(7)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um produto é listado com sucesso")
     public void deveBuscarOProdutoAposAlteracao() {
         ValidatableResponse body = given()
                 .baseUri(BASE_URL)
@@ -226,9 +226,9 @@ public class AdministracaoProdutos {
 
     @Test
     @Order(8)
-    @Story("Novo usuário deve conseguir realizar login com sucesso")
+    @Story("Administração de produtos")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Verifica se um novo usuário realiza login com sucesso")
+    @Description("Verifica se um produto é deletado com sucesso")
     public void deveApagarProdutoENaoListar() {
         given()
                 .baseUri(BASE_URL)
