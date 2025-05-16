@@ -28,13 +28,18 @@ jobs:
         with:
           allure_version: 2.27.0
 
+      - name: Copy Allure results to target folder
+        run: |
+            mkdir -p target/allure-results
+            cp -r .allure-results/* target/allure-results/
+
       - name: Generate Allure Report
-        run: mvn allure:report -Dallure.results.directory=.allure-results
+        run: mvn allure:report
 
       - name: Copy Allure Report to docs folder
         run: |
           mkdir -p docs
-          cp -r target/site/* docs/
+          cp -r target/site/allure-maven-plugin/* docs/
           touch docs/.nojekyll
 
       - name: Deploy Allure Report to GitHub Pages
