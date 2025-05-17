@@ -1,28 +1,41 @@
+#Define o nome do workflow que será exibido na aba Actions do GitHub.
 name: Run API Tests and Publish Allure Report
 
+#Define quando o workflow será executado:
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
+#Início da definição do job test.
+#Ele será executado em um runner hospedado pelo GitHub usando a última versão do Ubuntu.
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
+      #Baixa o código do repositório no runner para que ele possa ser usado nos próximos passos.
       - name: Checkout repository
         uses: actions/checkout@v3
 
+     #Instala o Java 17 usando a distribuição Temurin (do projeto Adoptium), necessária para compilar e executar seus testes.
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      #Roda o comando mvn clean test, que:
+      #clean: limpa os arquivos gerados anteriormente.
+      #test: executa os testes automatizados.
+      #-Dtest=suite.SuiteRunner: executa especificamente a classe de suíte SuiteRunner.
+      #-Dallure.results.directory=target/allure-results: define onde os resultados dos testes para o Allure devem ser gravados.
       - name: Build and test with Maven
         run: mvn clean test -Dtest=suite.SuiteRunner -Dallure.results.directory=target/allure-results
 
+      #Imprime no log os arquivos presentes nas pastas raiz, target e .allure-results.
+      #Serve para ajudar a verificar onde os resultados estão sendo gerados, útil para depuração.
       - name: List directories to debug allure-results location
         run: |
           echo "Root files:"
@@ -32,6 +45,9 @@ jobs:
           echo ".allure-results files:"
           ls -la .allure-results || echo ".allure-results not found"
 
+      #Verifica se a pasta .allure-results existe:
+      #Se sim, copia o conteúdo dela para target/allure-results, que é onde o plugin Maven do Allure espera os arquivos.
+      #Se não existir, apenas imprime uma mensagem.
       - name: Copy allure results to target directory if exists
         run: |
           if [ -d ".allure-results" ]; then
@@ -41,20 +57,27 @@ jobs:
             echo ".allure-results directory does NOT exist. Skipping copy."
           fi
 
+      #Executa o plugin do Allure para gerar o relatório a partir dos arquivos em target/allure-results.
+      #O relatório HTML é gerado na pasta target/site/allure-maven-plugin.
       - name: Generate Allure Report
         run: mvn allure:report
 
+      #Cria a pasta docs (se não existir).
+      #Copia o conteúdo do relatório HTML para dentro dela.
+      #Cria o arquivo .nojekyll para evitar que o GitHub Pages ignore pastas/arquivos com underline (_), o que poderia quebrar o relatório.
       - name: Copy Allure Report to docs folder
         run: |
           mkdir -p docs
           cp -r target/site/allure-maven-plugin/* docs/
           touch docs/.nojekyll
 
+      #Publica o conteúdo da pasta docs na branch gh-pages, que é usada para hospedar o site com o GitHub Pages.
+      #O token GH_PAGES_TOKEN é um segredo configurado no repositório, que permite autenticar e fazer o push na branch gh-pages
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.GH_PAGES_TOKEN }}
           publish_dir: ./docs
-          target_branch: gh-pages
+          publish_branch: gh-pages
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'
